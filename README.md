@@ -3,7 +3,7 @@
 **Turn your own study notes into boss battles.** Paste your notes, and every definition becomes an attack. Right answers damage the boss, wrong answers cost a heart, and the terms you miss come back in a rematch.
 
 <p align="center">
-  <img src="Screenshots/notes.png" width="24%"> <img src="Screenshots/fight.png" width="24%"> <img src="Screenshots/combo.png" width="24%"> <img src="Screenshots/victory.png" width="24%">
+  <img src="screenshots/notes.png" width="24%"> <img src="screenshots/fight.png" width="24%"> <img src="screenshots/combo.png" width="24%"> <img src="screenshots/victory.png" width="24%">
 </p>
 
 ## Why I built it

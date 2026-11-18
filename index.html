@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BossRush</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#150d20;--panel:#241a36;--line:#5b3f86;--ink:#f6efff;--mute:#a897c9;--gold:#ffd24a;--ok:#4fe3a1;--bad:#ff4d6d;--px:"Press Start 2P","Courier New",monospace;--body:"VT323","Courier New",monospace}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--ink);font:22px/1.25 var(--body);padding:22px 14px 48px;display:flex;justify-content:center;
+background:radial-gradient(ellipse at 50% -10%,#4b2a7a 0,transparent 55%),repeating-linear-gradient(0deg,#ffffff07 0 2px,transparent 2px 4px),var(--bg)}
+main{width:100%;max-width:680px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px}
+h1{font:clamp(20px,6vw,32px)/1 var(--px);margin:0;color:var(--gold);text-shadow:4px 4px 0 #7a2f8f}
+.px{background:var(--panel);--c:var(--line);box-shadow:0 -4px 0 0 var(--c),0 4px 0 0 var(--c),-4px 0 0 0 var(--c),4px 0 0 0 var(--c);margin:4px}
+.pad{padding:18px}
+#lvl{padding:8px 12px;font:10px var(--px);min-width:120px}
+.xpbar{height:8px;background:#0d0716;margin-top:7px}
+#xp{display:block;height:100%;width:0;background:var(--ok);transition:width .6s}
+p.sub{margin:0 0 14px;color:var(--mute)}
+section[hidden]{display:none}
+textarea{width:100%;height:200px;background:#0d0716;color:var(--ink);border:0;padding:12px;font:22px/1.2 var(--body);resize:vertical;box-shadow:inset 0 0 0 3px var(--line)}
+textarea:focus{outline:none;box-shadow:inset 0 0 0 3px var(--gold)}
+.btn{font:11px/1.4 var(--px);color:var(--ink);border:0;padding:14px 14px;cursor:pointer;--c:var(--line);transition:transform .1s}
+.btn:hover:not(:disabled){--c:var(--gold)}
+.btn:active:not(:disabled){transform:translateY(3px)}
+.btn:focus-visible{outline:3px dashed var(--gold);outline-offset:6px}
+.btn.go{background:var(--gold);color:#2b1a00;--c:#b8860b}
+.row{display:flex;gap:14px;flex-wrap:wrap;margin:18px 4px 8px}
+#found{color:var(--mute);min-height:26px}
+.weak{margin-top:12px;padding-left:12px;border-left:4px solid var(--bad)}
+.weak b{display:block;font:10px var(--px);margin-bottom:8px;color:var(--bad)}
+.weak span{display:inline-block;background:#0d0716;padding:1px 8px;margin:2px 6px 2px 0}
+.hud{display:flex;justify-content:space-between;align-items:center;font:11px var(--px);margin:0 4px 14px}
+#hearts{display:inline-block;font-size:22px}
+#combo{color:var(--gold)}
+#arena{position:relative;text-align:center;padding:16px 16px 22px;background:radial-gradient(circle at 50% 75%,#8a3fc455,transparent 62%),var(--panel)}
+#bname{font:12px var(--px);margin-bottom:10px;color:var(--gold)}
+.bar{height:20px;background:#0d0716;box-shadow:0 0 0 3px var(--line)}
+#bossbar{display:block;height:100%;width:100%;transition:width .5s;background:repeating-linear-gradient(90deg,var(--bad) 0 14px,#b8223f 14px 16px)}
+#hpnum{font:10px var(--px);margin:8px 0 4px;color:var(--mute)}
+#boss{display:inline-block;font-size:100px;line-height:1.1;filter:drop-shadow(0 0 18px #b04dff);animation:float 2.4s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-10px)}}
+.pop{position:absolute;left:50%;top:48%;font:16px var(--px);transform:translateX(-50%);text-shadow:3px 3px 0 #000;animation:rise .9s ease-out forwards;pointer-events:none}
+@keyframes rise{to{transform:translate(-50%,-80px);opacity:0}}
+#stem{padding:18px;margin-top:18px;font-size:28px;line-height:1.15}
+#opts{display:grid;gap:16px;margin:20px 4px 0}
+@media(min-width:560px){#opts{grid-template-columns:1fr 1fr}}
+#opts .btn{text-align:left;font-size:14px;padding:16px}
+#opts .btn b{color:var(--gold);margin-right:8px}
+#opts .btn.ok{background:var(--ok);color:#00281a;--c:#1f9b6b}
+#opts .btn.ok b{color:#00281a}
+#opts .btn.bad{background:var(--bad);color:#2b0009;--c:#a8203a}
+.shake{animation:shake .4s}
+@keyframes shake{20%{transform:translateX(-9px)}40%{transform:translateX(9px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+#vig{position:fixed;inset:0;pointer-events:none;box-shadow:inset 0 0 120px 24px #ff1744;opacity:0}
+#vig.hurt{animation:vig .5s}
+@keyframes vig{from{opacity:.85}to{opacity:0}}
+#result{font:clamp(20px,6vw,30px)/1.3 var(--px);margin:6px 0 14px;text-shadow:4px 4px 0 #000}
+.win{color:var(--gold)}.lose{color:var(--bad)}
+#summary{font-size:26px;margin:0}
+.tbar{margin:16px 4px 0;height:10px}#tbar{display:block;height:100%;width:100%;background:var(--ok)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="vig"></div>
+<main>
+<header>
+  <h1>BOSSRUSH</h1>
+  <div id="lvl" class="px">Level <span id="lv">1</span><div class="xpbar"><i id="xp"></i></div></div>
+</header>
+
+<section id="home" class="px pad">
+  <p class="sub">Paste your notes. Every definition becomes an attack. Wrong answers cost a heart.</p>
+  <div class="row" style="margin-top:0"><select id="subject" class="btn px" onchange="loadSubject()" aria-label="Subject"></select><button class="btn px" onclick="newSubject()">+ Subject</button><label class="btn px">Import PDF<input type="file" accept=".pdf" hidden onchange="importPdf(this)"></label></div>
+  <textarea id="notes" aria-label="Your notes" placeholder="ARP stands for Address Resolution Protocol and it maps an IP address to a MAC address.&#10;DHCP: assigns IP addresses automatically to devices on a network.&#10;..."></textarea>
+  <div class="row">
+    <button class="btn px go" onclick="start('normal')">Fight a boss</button>
+    <button class="btn px" onclick="start('rematch')">Rematch weak spots</button>
+    <button class="btn px" onclick="start('ai')">AI boss</button>
+    <button class="btn px" onclick="startRaid(true)">Host raid</button>
+    <button class="btn px" onclick="startRaid(false)">Join raid</button>
+    <button class="btn px" onclick="window.open('/sheet')">Revision sheet</button>
+    <button class="btn px" onclick="sample()">Try sample notes</button>
+  </div>
+  <div id="found"></div>
+  <div id="weak" class="weak" hidden></div>
+</section>
+
+<section id="fight" hidden>
+  <div class="hud"><span id="hearts"></span><span id="combo"></span><span id="round"></span></div>
+  <div id="arena" class="px">
+    <div id="bname"></div>
+    <div class="bar"><i id="bossbar"></i></div>
+    <div id="hpnum"></div>
+    <span id="boss">👾</span>
+  </div>
+  <div id="stem" class="px"></div>
+  <div class="bar tbar"><i id="tbar"></i></div>
+  <div id="opts"></div>
+</section>
+
+<section id="end" hidden class="px pad">
+  <div id="result"></div>
+  <p id="summary"></p>
+  <div class="row">
+    <button class="btn px go" onclick="start('normal')">New boss</button>
+    <button class="btn px" onclick="start('rematch')">Rematch weak spots</button>
+    <button class="btn px" onclick="home()">Edit notes</button>
+  </div>
+</section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const BOSSES = ["👾", "🐉", "🤖", "👹", "🧟", "🦑"];
+const NAMES = ["Lord Latency", "The Null Pointer", "Baron Buffer Overflow", "Sir Segfault", "Dr. Deadlock", "Queen of Queues", "The Packet Wraith", "Count Cache Miss"];
+const SAMPLE = [
+  "ARP stands for Address Resolution Protocol and it maps an IP address to a MAC address.",
+  "DHCP: assigns IP addresses automatically to devices on a network.",
+  "DNS is a system that translates domain names into IP addresses.",
+  "A subnet mask is used to split an IP address into network and host parts.",
+  "TCP is a connection-oriented protocol that gives reliable delivery of data.",
+  "UDP is a connectionless protocol that sends data fast without guarantees.",
+  "A firewall is a security system that filters incoming and outgoing network traffic.",
+  "HTTP stands for Hypertext Transfer Protocol and it is used to load web pages."
+].join("\n");
+let Q = [], i = 0, hp = 3, combo = 0, best = 0, hits = 0, gained = 0, timer, SUBJ = "General", SUBJECTS = {}, RAID = null, RH = {hp: 1, max: 1, players: []}, tick, poll, left;
+
+const show = id => ["home", "fight", "end"].forEach(s => $(s).hidden = s !== id);
+const api = async (path, opts) => (await fetch(path, opts)).json();
+const post = (path, obj) => api(path, {method: "POST", body: JSON.stringify(obj)});
+
+const getXP = () => { try { return +localStorage.getItem("br_xp") || 0; } catch (e) { return 0; } };
+function addXP(n) { try { localStorage.setItem("br_xp", getXP() + n); } catch (e) {} lvl(); }
+function lvl() { const x = getXP(); $("lv").textContent = Math.floor(x / 100) + 1; $("xp").style.width = (x % 100) + "%"; }
+
+function home() { show("home"); loadWeak(); }
+function sample() { $("notes").value = SAMPLE; saveNotes(); }
+
+async function saveNotes() {
+  SUBJECTS[SUBJ] = $("notes").value;
+  const r = await post("/api/notes", {subject: SUBJ, notes: $("notes").value});
+  $("found").textContent = r.questions > 0
+    ? r.questions + " boss questions ready. Press Fight a boss."
+    : "Add at least 4 definition lines (like 'DNS is a system that...') to summon a boss.";
+}
+$("notes").addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(saveNotes, 600); });
+
+async function loadWeak() {
+  const r = await api("/api/stats");
+  $("weak").hidden = !r.weak.length;
+  $("weak").innerHTML = "<b>Weak spots</b>";
+  r.weak.forEach(w => {
+    const s = document.createElement("span");
+    s.textContent = w.term + " (missed " + w.miss + ")";
+    $("weak").appendChild(s);
+  });
+}
+
+async function start(mode) {
+  SUBJECTS[SUBJ] = $("notes").value;
+  await post("/api/notes", {subject: SUBJ, notes: $("notes").value});
+  RAID = null; clearInterval(poll);
+  $("found").textContent = mode === "ai" ? "Summoning an AI boss..." : "";
+  const r = await api("/api/start?mode=" + mode + "&n=10&subject=" + encodeURIComponent(SUBJ));
+  Q = r.questions;
+  if (r.error) { show("home"); $("found").textContent = r.error; return; }
+  if (!Q.length) {
+    show("home");
+    $("found").textContent = mode === "rematch"
+      ? "No weak spots yet. Fight a normal boss first."
+      : "Not enough definitions found. Add at least 4 lines like: TCP is a connection-oriented protocol used for reliable delivery.";
+    return;
+  }
+  i = 0; hp = 3; combo = 0; best = 0; hits = 0; gained = 0;
+  look(SUBJ);
+  show("fight");
+  next();
+}
+
+function hud() {
+  const pct = RAID ? 100 * RH.hp / RH.max : 100 * (Q.length - hits) / Q.length;
+  $("bossbar").style.width = Math.max(0, pct) + "%";
+  $("hpnum").textContent = RAID
+    ? "RAID HP " + Math.max(0, RH.hp) + "/" + RH.max + "  " + RH.players.map(p => p.name + " " + p.dmg).join(" | ")
+    : "HP " + (Q.length - hits) + "/" + Q.length;
+  $("hearts").textContent = "\u2764\ufe0f".repeat(hp) + "\ud83d\udda4".repeat(3 - hp);
+  $("combo").textContent = combo > 1 ? "COMBO x" + combo : "";
+  $("round").textContent = Math.min(i + 1, Q.length) + "/" + Q.length;
+}
+
+function next() {
+  if (hp <= 0 || i >= Q.length || (RAID && RH.hp <= 0)) return end();
+  const q = Q[i];
+  $("stem").textContent = q.q;
+  $("opts").innerHTML = "";
+  q.options.forEach((o, k) => {
+    const b = document.createElement("button");
+    b.className = "btn px";
+    b.dataset.v = o;
+    const key = document.createElement("b");
+    key.textContent = (k + 1);
+    b.append(key, o);
+    b.onclick = () => pick(b, o, q);
+    $("opts").appendChild(b);
+  });
+  hud();
+  clearInterval(tick); left = 20;
+  tick = setInterval(() => {
+    left -= 0.1;
+    $("tbar").style.width = (left * 5) + "%";
+    if (left <= 0) { clearInterval(tick); pick(null, null, q); }
+  }, 100);
+}
+
+function flash(id) {
+  const el = $(id);
+  el.classList.remove("shake");
+  void el.offsetWidth;
+  el.classList.add("shake");
+}
+
+function pop(text, color) {
+  const p = document.createElement("span");
+  p.className = "pop";
+  p.textContent = text;
+  p.style.color = color;
+  $("arena").appendChild(p);
+  setTimeout(() => p.remove(), 900);
+}
+
+function pick(btn, choice, q) {
+  clearInterval(tick);
+  const ok = choice === q.answer;
+  [...$("opts").children].forEach(b => {
+    b.disabled = true;
+    if (b.dataset.v === q.answer) b.classList.add("ok");
+  });
+  if (!ok && btn) btn.classList.add("bad");
+  post("/api/answer", {id: q.id, term: q.answer, correct: ok});
+  if (ok && RAID) post("/api/raid/hit", {name: RAID, dmg: 10});
+  if (ok) {
+    hits++; combo++; best = Math.max(best, combo);
+    const dmg = 10 + 5 * (combo - 1);
+    gained += dmg;
+    pop(combo >= 3 ? "CRIT -" + dmg : "-" + dmg, combo >= 3 ? "#ffd24a" : "#4fe3a1");
+    flash("arena");
+  } else {
+    hp--; combo = 0;
+    pop("MISS", "#ff4d6d");
+    flash("hearts");
+    $("vig").classList.remove("hurt"); void $("vig").offsetWidth; $("vig").classList.add("hurt");
+  }
+  hud();
+  i++;
+  setTimeout(next, 1100);
+}
+
+function end() {
+  show("end");
+  const win = hp > 0;
+  if (win) gained += 20;
+  addXP(gained);
+  clearInterval(tick); clearInterval(poll);
+  $("result").textContent = RAID ? (RH.hp <= 0 ? "TEAM VICTORY!" : "RAID OVER") : (win ? "VICTORY!" : "GAME OVER");
+  $("result").className = win ? "win" : "lose";
+  $("summary").textContent = "Hits " + hits + "/" + Q.length + ", best combo " + best + ", +" + gained + " XP. Missed terms come back in Rematch.";
+}
+
+function look(s) {
+  const h = [...s].reduce((a, c) => a + c.charCodeAt(0), 0);  // one boss per subject
+  $("boss").textContent = BOSSES[h % BOSSES.length];
+  $("bname").textContent = NAMES[h % NAMES.length];
+}
+function fillSubjects(pickName) {
+  $("subject").innerHTML = "";
+  Object.keys(SUBJECTS).forEach(n => { const o = document.createElement("option"); o.textContent = n; $("subject").appendChild(o); });
+  $("subject").value = SUBJ = pickName;
+  $("notes").value = SUBJECTS[SUBJ] || "";
+  loadWeak();
+}
+function loadSubject() { SUBJ = $("subject").value; $("notes").value = SUBJECTS[SUBJ] || ""; $("found").textContent = ""; }
+async function newSubject() {
+  const n = (prompt("Subject name? Each subject gets its own boss.") || "").trim();
+  if (!n || SUBJECTS[n] !== undefined) return;
+  SUBJECTS[n] = "";
+  await post("/api/notes", {subject: n, notes: ""});
+  fillSubjects(n);
+}
+function importPdf(input) {
+  const f = input.files[0];
+  if (!f) return;
+  const fr = new FileReader();
+  fr.onload = async () => {
+    $("found").textContent = "Reading PDF...";
+    const r = await post("/api/pdf", {data: fr.result.split(",")[1]});
+    if (r.error) { $("found").textContent = r.error; return; }
+    $("notes").value += ($("notes").value ? "\n" : "") + r.text;
+    saveNotes();
+  };
+  fr.readAsDataURL(f);
+  input.value = "";
+}
+async function startRaid(host) {
+  const name = (prompt("Your hero name?") || "").trim();
+  if (!name) return;
+  if (host) {
+    const h = await post("/api/raid/start", {subject: SUBJ});
+    if (h.error) { $("found").textContent = h.error; return; }
+  }
+  const r = await api("/api/raid");
+  if (!r.active) { $("found").textContent = "No raid is running yet. Ask the host to press Host raid."; return; }
+  clearInterval(poll);
+  RAID = name; Q = r.questions; RH = r;
+  i = 0; hp = 3; combo = 0; best = 0; hits = 0; gained = 0;
+  look(r.subject);
+  show("fight");
+  next();
+  poll = setInterval(async () => { RH = await api("/api/raid"); hud(); }, 1500);
+}
+
+document.addEventListener("keydown", e => {
+  if ($("fight").hidden) return;
+  const b = $("opts").children[+e.key - 1];
+  if (b && !b.disabled) b.click();
+});
+
+lvl();
+api("/api/data").then(r => { SUBJECTS = r.subjects; fillSubjects(Object.keys(SUBJECTS)[0]); });
+</script>
+</body>
+</html>
